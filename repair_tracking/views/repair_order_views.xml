@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_repair_order_list" model="ir.ui.view">
+        <field name="name">repair.order.list</field>
+        <field name="model">repair.order</field>
+        <field name="arch" type="xml">
+            <list string="أوامر الصيانة">
+                <field name="name" string="رقم الطلب"/>
+                <field name="customer_name" string="اسم العميل"/>
+                <field name="phone" string="رقم الهاتف"/>
+                <field name="device" string="الجهاز"/>
+                <field name="cost" string="التكلفة"/>
+                <field name="state" string="الحالة" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'under_repair'" decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_repair_order_form" model="ir.ui.view">
+        <field name="name">repair.order.form</field>
+        <field name="model">repair.order</field>
+        <field name="arch" type="xml">
+            <form string="أمر صيانة">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,under_repair,done"/>
+                </header>
+                
+                <sheet>
+                    <group>
+                        <field name="name" string="رقم الطلب"/>
+                        <field name="customer_name" string="اسم العميل"/>
+                        <field name="phone" string="رقم الهاتف"/>
+                        <field name="device" string="الجهاز"/>
+                        <field name="cost" string="التكلفة"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_repair_order" model="ir.actions.act_window">
+        <field name="name">أوامر الصيانة</field>
+        <field name="res_model">repair.order</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="repair_tracking_root" name="الصيانة"/>
+
+    <menuitem id="repair_order_menu"
+              name="أوامر الصيانة"
+              parent="repair_tracking_root"
+              action="action_repair_order"/>
+<template id="check_status_page" name="Check Repair Status">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <div class="container mt-5 mb-5 text-center" style="direction: rtl;">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6 card shadow-sm p-5" style="border-radius: 12px; background-color: #ffffff; border: 1px solid #e3e3e3;">
+                            <h2 class="mb-3" style="color: #00A09D;">الاستعلام عن حالة أمر الصيانة</h2>
+                            <p class="text-muted fs-5">من فضلك أدخل رقم هاتفك المسجل لدينا لمعرفة حالة جهازك الحالي</p>
+                            
+                            <form action="/repair/status" method="post" class="mt-4">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <div class="mb-4">
+                                    <input type="text" name="phone" class="form-control text-center form-control-lg" placeholder="ضع رقم الهاتف هنا" required="required" style="border-radius: 8px; font-size: 1.2rem;"/>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-lg w-100" style="border-radius: 8px; background-color: #00A09D; border: none;">استعلام عن الحالة</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="status_result_page" name="Repair Status Result">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <div class="container mt-5 mb-5 text-center" style="direction: rtl;">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <t t-if="order">
+                                <h2 class="text-success mb-4">مرحباً بك يا <t t-out="order.customer_name"/></h2>
+                                <div class="card shadow-sm" style="border-radius: 12px; background-color: #ffffff; border: 1px solid #e3e3e3;">
+                                    <div class="card-body p-4">
+                                        <p class="fs-5 mb-3"><strong>رقم الطلب:</strong> <t t-out="order.name"/></p>
+                                        <p class="fs-5 mb-3"><strong>الجهاز:</strong> <t t-out="order.device"/></p>
+                                        <hr/>
+                                        <p class="fs-4 mb-2"><strong>حالة الجهاز الحالية:</strong></p>
+                                        <div>
+                                            <span class="badge bg-warning p-3 px-5 fs-6" t-if="order.state == 'under_repair'" style="border-radius: 20px; color: #fff;">تحت الصيانة</span>
+                                            <span class="badge bg-success p-3 px-5 fs-6" t-if="order.state == 'done'" style="border-radius: 20px;">تم التسليم / جاهز</span>
+                                            <span class="badge bg-info p-3 px-5 fs-6" t-if="order.state == 'draft'" style="border-radius: 20px;">مسودة / جديد</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="card p-5 shadow-sm" style="border-radius: 12px; border: 1px solid #e3e3e3;">
+                                    <h2 class="text-danger mb-3">لم نجد بيانات!</h2>
+                                    <p class="fs-5 text-muted">نأسف، لم نجد أي أجهزة أو طلبات صيانة مسجلة برقم الهاتف: <strong t-out="phone"/></p>
+                                    <a href="/repair/check" class="btn btn-secondary btn-lg mt-3" style="border-radius: 8px;">المحاولة مرة أخرى</a>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

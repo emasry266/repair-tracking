@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="check_status_page" name="Check Repair Status">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <div class="container mt-5 mb-5 text-center" style="direction: rtl;">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6 card shadow-sm p-5" style="border-radius: 12px; background-color: #ffffff;">
+                            <h2 class="mb-3" style="color: #00A09D;">الاستعلام عن حالة أمر الصيانة</h2>
+                            <p class="text-muted fs-5">من فضلك أدخل رقم هاتفك المسجل لدينا لمعرفة حالة جهازك الحالي</p>
+                            
+                            <form action="/repair/status" method="post" class="mt-4">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <div class="mb-4">
+                                    <input type="text" name="phone" class="form-control text-center form-control-lg" placeholder="ضع رقم الهاتف هنا (مثال: 05xxxxxxx)" required="required" style="border-radius: 8px; font-size: 1.2rem;"/>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-lg w-100" style="border-radius: 8px; background-color: #00A09D; border: none;">استعلام عن الحالة</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="status_result_page" name="Repair Status Result">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <div class="container mt-5 mb-5 text-center" style="direction: rtl;">
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <t t-if="order">
+                                <h2 class="text-success mb-4">مرحباً بك يا <t t-out="order.customer_name"/></h2>
+                                <div class="card shadow-sm" style="border-radius: 12px; background-color: #ffffff;">
+                                    <div class="card-body p-4">
+                                        <p class="fs-5 mb-3"><strong>رقم الطلب:</strong> <t t-out="order.name"/></p>
+                                        <p class="fs-5 mb-3"><strong>الجهاز:</strong> <t t-out="order.device"/></p>
+                                        <hr/>
+                                        <p class="fs-4 mb-2"><strong>حالة الجهاز الحالية:</strong></p>
+                                        <div>
+                                            <span class="badge bg-warning p-3 px-5 fs-6" t-if="order.state == 'under_repair'" style="border-radius: 20px; color: #fff;">تحت الصيانة</span>
+                                            <span class="badge bg-success p-3 px-5 fs-6" t-if="order.state == 'done'" style="border-radius: 20px;">تم التسليم / جاهز</span>
+                                            <span class="badge bg-info p-3 px-5 fs-6" t-if="order.state == 'draft'" style="border-radius: 20px;">مسودة / جديد</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="card p-5 shadow-sm" style="border-radius: 12px;">
+                                    <h2 class="text-danger mb-3">لم نجد بيانات!</h2>
+                                    <p class="fs-5 text-muted">نأسف، لم نجد أي أجهزة أو طلبات صيانة مسجلة برقم الهاتف: <strong t-out="phone"/></p>
+                                    <a href="/repair/check" class="btn btn-secondary btn-lg mt-3" style="border-radius: 8px;">المحاولة مرة أخرى</a>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
